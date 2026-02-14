@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #2c3e50;
+  --sidebar: #2c3e50;
+}
+
+.dark {
+  --bg: #1e1e2f;
+  --card: #2b2b3c;
+  --text: #ffffff;
+  --sidebar: #111827;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.layout { display:flex; }
+
+.sidebar {
+  width:240px;
+  min-height:100vh;
+  background: var(--sidebar);
+  color:white;
+  padding:25px;
+}
+
+.sidebar h2 { margin-bottom:25px; }
+
+.menu-item {
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.menu-item:hover { background: rgba(255,255,255,0.1); }
+
+.logout { background:#e74c3c; text-align:center; }
+
+.main {
+  flex:1;
+  padding:30px;
+}
+
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:25px;
+}
+
+.toggle-btn {
+  padding:6px 12px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.stats {
+  display:flex;
+  gap:20px;
+  margin-bottom:25px;
+}
+
+.card {
+  flex:1;
+  background: var(--card);
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.05);
+  text-align:center;
+  transition:0.3s;
+}
+
+.card:hover { transform: translateY(-5px); }
+
+.card p {
+  font-size:28px;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  background: var(--card);
+  margin-bottom:30px;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+th, td {
+  padding:12px;
+  border-bottom:1px solid #eee;
+}
+
+.badge {
+  padding:4px 8px;
+  border-radius:12px;
+  color:white;
+  font-size:12px;
+}
+
+.High { background:#e74c3c; }
+.Medium { background:#f39c12; }
+.Low { background:#2ecc71; }
+
+.chart-container {
+  background: var(--card);
+  padding:20px;
+  border-radius:12px;
+  height:350px;
+  margin-bottom:30px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+<div class="sidebar">
+  <h2>Admin Panel</h2>
+  <div class="menu-item">Dashboard</div>
+  <div class="menu-item logout" onclick="logout()">Logout</div>
+</div>
+
+<div class="main">
+
+<div class="topbar">
+  <h1>Admin Dashboard</h1>
+  <button class="toggle-btn" onclick="toggleDark()">🌙 Toggle Mode</button>
+</div>
+
+<div class="stats">
+  <div class="card">
+    <h3>Total Tickets</h3>
+    <p id="totalTickets">0</p>
+  </div>
+  <div class="card">
+    <h3>Open Tickets</h3>
+    <p id="openTickets">0</p>
+  </div>
+  <div class="card">
+    <h3>SLA At Risk</h3>
+    <p id="slaAtRisk">0</p>
+  </div>
+</div>
+
+<h2>All Tickets</h2>
+<table id="ticketsTable">
+<thead>
+<tr>
+<th>#</th><th>Title</th><th>Priority</th><th>Status</th><th>Assigned</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<h2>Status Analytics</h2>
+<div class="chart-container">
+  <canvas id="statusChart"></canvas>
+</div>
+
+<h2>Priority Distribution</h2>
+<div class="chart-container">
+  <canvas id="priorityChart"></canvas>
+</div>
+
+</div>
+</div>
+
+<script>
+if (localStorage.getItem("role") !== "admin") {
+  window.location.href = "/login.html";
+}
+
+const socket = io();
+let statusChart, priorityChart;
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "/login.html";
+}
+
+function animateCounter(id, value) {
+  let start = 0;
+  const el = document.getElementById(id);
+  const interval = setInterval(() => {
+    start++;
+    el.innerText = start;
+    if (start >= value) clearInterval(interval);
+  }, 20);
+}
+
+function toggleDark() {
+  document.body.classList.toggle("dark");
+}
+
+function loadData() {
+  fetch("/api/tickets")
+  .then(res => res.json())
+  .then(tickets => {
+
+    const tbody = document.querySelector("#ticketsTable tbody");
+    tbody.innerHTML = "";
+
+    let open=0, sla=0;
+    let statusCount = {"Assigned":0,"In Progress":0,"Closed":0};
+    let priorityCount = {"High":0,"Medium":0,"Low":0};
+
+    tickets.forEach((t,i)=>{
+
+      if(t.status!=="Closed") open++;
+      if(t.priority==="High" && t.status!=="Closed") sla++;
+
+      statusCount[t.status]++;
+      priorityCount[t.priority]++;
+
+      tbody.innerHTML += `
+      <tr>
+      <td>${i+1}</td>
+      <td>${t.title}</td>
+      <td><span class="badge ${t.priority}">${t.priority}</span></td>
+      <td>${t.status}</td>
+      <td>${t.assignedTo||"-"}</td>
+      </tr>`;
+    });
+
+    animateCounter("totalTickets", tickets.length);
+    animateCounter("openTickets", open);
+    animateCounter("slaAtRisk", sla);
+
+    renderCharts(statusCount, priorityCount);
+  });
+}
+
+function renderCharts(statusCount, priorityCount){
+
+  if(statusChart) statusChart.destroy();
+  if(priorityChart) priorityChart.destroy();
+
+  statusChart = new Chart(document.getElementById("statusChart"),{
+    type:"bar",
+    data:{
+      labels:Object.keys(statusCount),
+      datasets:[{data:Object.values(statusCount),backgroundColor:["#3498db","#f39c12","#2ecc71"]}]
+    }
+  });
+
+  priorityChart = new Chart(document.getElementById("priorityChart"),{
+    type:"pie",
+    data:{
+      labels:Object.keys(priorityCount),
+      datasets:[{data:Object.values(priorityCount),backgroundColor:["#e74c3c","#f39c12","#2ecc71"]}]
+    }
+  });
+}
+
+loadData();
+socket.on("newTicket", loadData);
+socket.on("ticketStatusUpdated", loadData);
+</script>
+
+</body>
+</html>
