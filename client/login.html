@@ -146,22 +146,18 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
 
     if (data.role) {
 
-      // Clear any old session data first
       localStorage.clear();
-
-      // Store role
       localStorage.setItem("role", data.role);
 
       if (data.role === "operator") {
 
-        // Store exact username
         localStorage.setItem("operatorName", username);
 
         result.className = "success";
         result.innerText = "Operator login successful! Redirecting...";
 
         setTimeout(() => {
-          window.location.href = "/operatordashboard.html";  // Correct filename
+          window.location.href = "operatorDashboard.html";
         }, 800);
 
       } else if (data.role === "admin") {
@@ -170,7 +166,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         result.innerText = "Admin login successful! Redirecting...";
 
         setTimeout(() => {
-          window.location.href = "/admindashboard.html";
+          window.location.href = "adminDashboard.html";
         }, 800);
       }
 
