@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, "client")));
 
 // Explicit root route (Fixes "Cannot GET /")
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "index.html"));
+  res.sendFile(path.join(__dirname, "client", "login.html"));
 });
 
 // ---------------- USERS ----------------
