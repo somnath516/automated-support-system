@@ -17,12 +17,12 @@ app.get("/", (req, res) => {
 });
 
 // Explicit dashboard routes (prevents Cannot GET errors)
-app.get("/operatordashboard.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "operatordashboard.html"));
+app.get("/operatorDashboard.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "operatorDashboard.html"));
 });
 
-app.get("/admindashboard.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "admindashboard.html"));
+app.get("/adminDashboard.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "adminDashboard.html"));
 });
 
 // ================= USERS =================
