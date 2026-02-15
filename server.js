@@ -7,8 +7,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// ---------------- MIDDLEWARE ----------------
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "client")));
+
+// Explicit root route (Fixes "Cannot GET /")
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "index.html"));
+});
 
 // ---------------- USERS ----------------
 let users = [
@@ -18,7 +24,7 @@ let users = [
 
 // ---------------- TICKETS ----------------
 let tickets = [];
-let ticketCounter = 1; // unique ID generator
+let ticketCounter = 1;
 
 // ---------------- LOGIN ----------------
 app.post("/api/login", (req, res) => {
@@ -43,7 +49,7 @@ app.post("/api/login", (req, res) => {
 app.post("/api/tickets", (req, res) => {
   const ticket = req.body;
 
-  ticket.id = ticketCounter++; // assign unique ID
+  ticket.id = ticketCounter++;
   ticket.assignedTo = "operator";
   ticket.status = "Assigned";
 
@@ -95,6 +101,8 @@ app.put("/api/tickets/:id/status", (req, res) => {
 });
 
 // ---------------- SERVER START ----------------
-server.listen(3000, () => {
-  console.log("Server running on port 3000");
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
