@@ -13,16 +13,7 @@ app.use(express.static(path.join(__dirname, "client")));
 
 // ================= ROOT ROUTE =================
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "login.html"));
-});
-
-// Explicit dashboard routes (prevents Cannot GET errors)
-app.get("/operatorDashboard.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "operatorDashboard.html"));
-});
-
-app.get("/adminDashboard.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "adminDashboard.html"));
+  res.sendFile(path.join(__dirname, "client", "role.html"));
 });
 
 // ================= USERS =================
@@ -58,7 +49,6 @@ app.post("/api/login", (req, res) => {
 app.post("/api/tickets", (req, res) => {
   const ticket = req.body;
 
-  // Assign to available operator (basic logic)
   const operators = users.filter(u => u.role === "operator");
   const assignedOperator = operators[0]?.username || "operator";
 

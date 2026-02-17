@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Role</title>
+    <style>
+        body {
+            font-family: Arial;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1f4037, #99f2c8);
+        }
+        .box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        button {
+            display: block;
+            width: 200px;
+            margin: 15px auto;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Select Your Role</h2>
+
+    <button onclick="goToLogin('admin')">Admin</button>
+    <button onclick="goToLogin('operator')">Operator</button>
+    <button onclick="goToTicket()">Raise Ticket</button>
+</div>
+
+<script>
+function goToLogin(role) {
+    window.location.href = "login.html?role=" + role;
+}
+
+function goToTicket() {
+    window.location.href = "createTicket.html";
+}
+</script>
+
+</body>
+</html>
