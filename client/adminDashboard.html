@@ -90,8 +90,6 @@ body {
   transition:0.3s;
 }
 
-.card:hover { transform: translateY(-5px); }
-
 .card p {
   font-size:28px;
   font-weight:bold;
@@ -201,16 +199,6 @@ function logout() {
   window.location.href = "/login.html";
 }
 
-function animateCounter(id, value) {
-  let start = 0;
-  const el = document.getElementById(id);
-  const interval = setInterval(() => {
-    start++;
-    el.innerText = start;
-    if (start >= value) clearInterval(interval);
-  }, 20);
-}
-
 function toggleDark() {
   document.body.classList.toggle("dark");
 }
@@ -223,31 +211,48 @@ function loadData() {
     const tbody = document.querySelector("#ticketsTable tbody");
     tbody.innerHTML = "";
 
-    let open=0, sla=0;
-    let statusCount = {"Assigned":0,"In Progress":0,"Closed":0};
-    let priorityCount = {"High":0,"Medium":0,"Low":0};
+    let open = 0;
+    let sla = 0;
 
-    tickets.forEach((t,i)=>{
+    let statusCount = {
+      "Assigned": 0,
+      "In Progress": 0,
+      "Closed": 0
+    };
 
-      if(t.status!=="Closed") open++;
-      if(t.priority==="High" && t.status!=="Closed") sla++;
+    let priorityCount = {
+      "High": 0,
+      "Medium": 0,
+      "Low": 0
+    };
 
-      statusCount[t.status]++;
-      priorityCount[t.priority]++;
+    tickets.forEach((t, i) => {
+
+      if (t.status !== "Closed") open++;
+      if (t.priority === "High" && t.status !== "Closed") sla++;
+
+      if (statusCount[t.status] !== undefined) {
+        statusCount[t.status]++;
+      }
+
+      if (priorityCount[t.priority] !== undefined) {
+        priorityCount[t.priority]++;
+      }
 
       tbody.innerHTML += `
-      <tr>
-      <td>${i+1}</td>
-      <td>${t.title}</td>
-      <td><span class="badge ${t.priority}">${t.priority}</span></td>
-      <td>${t.status}</td>
-      <td>${t.assignedTo||"-"}</td>
-      </tr>`;
+        <tr>
+          <td>${i + 1}</td>
+          <td>${t.title || "-"}</td>
+          <td><span class="badge ${t.priority}">${t.priority || "-"}</span></td>
+          <td>${t.status || "-"}</td>
+          <td>${t.assignedTo || "-"}</td>
+        </tr>
+      `;
     });
 
-    animateCounter("totalTickets", tickets.length);
-    animateCounter("openTickets", open);
-    animateCounter("slaAtRisk", sla);
+    document.getElementById("totalTickets").innerText = tickets.length;
+    document.getElementById("openTickets").innerText = open;
+    document.getElementById("slaAtRisk").innerText = sla;
 
     renderCharts(statusCount, priorityCount);
   });
@@ -262,7 +267,11 @@ function renderCharts(statusCount, priorityCount){
     type:"bar",
     data:{
       labels:Object.keys(statusCount),
-      datasets:[{data:Object.values(statusCount),backgroundColor:["#3498db","#f39c12","#2ecc71"]}]
+      datasets:[{
+        label:"Ticket Status",
+        data:Object.values(statusCount),
+        backgroundColor:["#3498db","#f39c12","#2ecc71"]
+      }]
     }
   });
 
@@ -270,7 +279,10 @@ function renderCharts(statusCount, priorityCount){
     type:"pie",
     data:{
       labels:Object.keys(priorityCount),
-      datasets:[{data:Object.values(priorityCount),backgroundColor:["#e74c3c","#f39c12","#2ecc71"]}]
+      datasets:[{
+        data:Object.values(priorityCount),
+        backgroundColor:["#e74c3c","#f39c12","#2ecc71"]
+      }]
     }
   });
 }
