@@ -27,6 +27,7 @@
             transition: transform 0.3s ease;
         }
 
+        /* Hidden by default */
         .sidebar.collapsed {
             transform: translateX(-100%);
         }
@@ -69,20 +70,21 @@
         /* Main */
         .main {
             flex: 1;
-            margin-left: 250px; /* Added extra spacing */
+            margin-left: 0; /* Full width initially */
             padding: 30px 40px;
             transition: margin-left 0.3s ease;
             width: 100%;
         }
 
+        /* When sidebar opens */
         .main.full {
-            margin-left: 20px; /* Small space when collapsed */
+            margin-left: 230px;
         }
 
         .topbar {
             display: flex;
             align-items: center;
-            gap: 30px; /* More spacing between menu and title */
+            gap: 30px;
             margin-bottom: 30px;
         }
 
@@ -160,7 +162,8 @@
 
 <body>
 
-<div class="sidebar" id="sidebar">
+<!-- Sidebar hidden by default -->
+<div class="sidebar collapsed" id="sidebar">
     <h2>Support Admin</h2>
 
     <a href="adminDashboard.html">Dashboard</a>
@@ -180,6 +183,7 @@
         <h1>Admin Dashboard</h1>
     </div>
 
+    <!-- KPI CARDS -->
     <div class="cards">
         <div class="card">
             <h3>Total Tickets</h3>
@@ -199,6 +203,7 @@
         </div>
     </div>
 
+    <!-- CHARTS -->
     <div class="charts">
         <div class="chart-box">
             <h3>Ticket Status Overview</h3>
@@ -211,6 +216,7 @@
         </div>
     </div>
 
+    <!-- TABLE -->
     <div class="table-section">
         <h3>Recent Tickets</h3>
         <table>
@@ -265,11 +271,7 @@ async function loadDashboard() {
             datasets: [{
                 label: "Ticket Count",
                 data: [assignedCount, openCount, closedCount],
-                backgroundColor: [
-                    "#3b82f6",
-                    "#f59e0b",
-                    "#10b981"
-                ]
+                backgroundColor: ["#3b82f6", "#f59e0b", "#10b981"]
             }]
         },
         options: {
@@ -287,11 +289,7 @@ async function loadDashboard() {
                     tickets.filter(t => t.priority === "Medium").length,
                     tickets.filter(t => t.priority === "Low").length
                 ],
-                backgroundColor: [
-                    "#ef4444",
-                    "#f59e0b",
-                    "#10b981"
-                ]
+                backgroundColor: ["#ef4444", "#f59e0b", "#10b981"]
             }]
         }
     });
