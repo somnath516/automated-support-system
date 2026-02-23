@@ -21,11 +21,14 @@
             color: white;
             height: 100vh;
             padding: 20px;
-            transition: 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: transform 0.3s ease;
         }
 
         .sidebar.collapsed {
-            margin-left: -230px;
+            transform: translateX(-100%);
         }
 
         .sidebar h2 {
@@ -51,13 +54,18 @@
         /* Main */
         .main {
             flex: 1;
+            margin-left: 230px;
             padding: 20px 30px;
-            transition: 0.3s ease;
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        .main.full {
+            margin-left: 0;
         }
 
         .topbar {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
         }
@@ -69,47 +77,7 @@
             padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-        }
-
-        .logout-container {
-            position: relative;
-        }
-
-        .logout-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .logout-dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 40px;
-            background: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            padding: 10px;
-            width: 180px;
-        }
-
-        .logout-dropdown p {
-            margin: 5px 0;
-            font-size: 13px;
-            color: gray;
-        }
-
-        .logout-dropdown button {
-            width: 100%;
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 5px;
-            cursor: pointer;
+            margin-right: 20px;
         }
 
         .cards {
@@ -165,6 +133,12 @@
         th {
             background: #f9fafb;
         }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #374151;
+            margin: 20px 0;
+        }
     </style>
 </head>
 
@@ -177,6 +151,9 @@
     <a href="#">Operators</a>
     <a href="#">Reports</a>
     <a href="#">Settings</a>
+
+    <hr>
+    <a href="#" onclick="logout()" style="color:#f87171;">Logout</a>
 </div>
 
 <div class="main">
@@ -184,15 +161,6 @@
     <div class="topbar">
         <button class="menu-btn" onclick="toggleSidebar()">☰ Menu</button>
         <h1>Admin Dashboard</h1>
-
-        <div class="logout-container">
-            <button class="logout-btn" onclick="toggleLogout()">Logout</button>
-            <div class="logout-dropdown" id="logoutDropdown">
-                <p>Admin Panel</p>
-                <p>Secure Session Active</p>
-                <button onclick="logout()">Confirm Logout</button>
-            </div>
-        </div>
     </div>
 
     <!-- KPI CARDS -->
@@ -284,9 +252,9 @@ async function loadDashboard() {
                 label: "Tickets",
                 data: [openCount, closedCount, assignedCount],
                 backgroundColor: [
-                    "#f59e0b",   // Open - Orange
-                    "#10b981",   // Closed - Green
-                    "#3b82f6"    // Assigned - Blue
+                    "#f59e0b",
+                    "#10b981",
+                    "#3b82f6"
                 ]
             }]
         }
@@ -314,11 +282,7 @@ async function loadDashboard() {
 
 function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("collapsed");
-}
-
-function toggleLogout() {
-    const dropdown = document.getElementById("logoutDropdown");
-    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    document.querySelector(".main").classList.toggle("full");
 }
 
 function logout() {
