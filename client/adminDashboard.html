@@ -1,295 +1,259 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Admin Dashboard</title>
+    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<style>
-:root {
-  --bg: #f4f6f8;
-  --card: #ffffff;
-  --text: #2c3e50;
-  --sidebar: #2c3e50;
-}
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            background: #f4f6f9;
+        }
 
-.dark {
-  --bg: #1e1e2f;
-  --card: #2b2b3c;
-  --text: #ffffff;
-  --sidebar: #111827;
-}
+        /* Sidebar */
+        .sidebar {
+            width: 230px;
+            background: #1f2937;
+            color: white;
+            height: 100vh;
+            padding: 20px;
+        }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
 
-body {
-  font-family: 'Poppins', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-}
+        .sidebar a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
 
-.layout { display:flex; }
+        .sidebar a:hover {
+            background: #374151;
+            color: white;
+        }
 
-.sidebar {
-  width:240px;
-  min-height:100vh;
-  background: var(--sidebar);
-  color:white;
-  padding:25px;
-}
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 20px 30px;
+        }
 
-.sidebar h2 { margin-bottom:25px; }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
 
-.menu-item {
-  padding:10px;
-  margin-bottom:10px;
-  border-radius:6px;
-  cursor:pointer;
-  transition:0.3s;
-}
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-.menu-item:hover { background: rgba(255,255,255,0.1); }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
 
-.logout { background:#e74c3c; text-align:center; }
+        .card h3 {
+            margin: 0;
+            font-size: 14px;
+            color: gray;
+        }
 
-.main {
-  flex:1;
-  padding:30px;
-}
+        .card h2 {
+            margin-top: 10px;
+        }
 
-.topbar {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:25px;
-}
+        .charts {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
 
-.toggle-btn {
-  padding:6px 12px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
+        .chart-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
 
-.stats {
-  display:flex;
-  gap:20px;
-  margin-bottom:25px;
-}
+        .table-section {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
 
-.card {
-  flex:1;
-  background: var(--card);
-  padding:25px;
-  border-radius:12px;
-  box-shadow:0 6px 15px rgba(0,0,0,0.05);
-  text-align:center;
-  transition:0.3s;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-.card p {
-  font-size:28px;
-  font-weight:bold;
-  margin-top:10px;
-}
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
 
-table {
-  width:100%;
-  border-collapse:collapse;
-  background: var(--card);
-  margin-bottom:30px;
-  border-radius:10px;
-  overflow:hidden;
-}
-
-th, td {
-  padding:12px;
-  border-bottom:1px solid #eee;
-}
-
-.badge {
-  padding:4px 8px;
-  border-radius:12px;
-  color:white;
-  font-size:12px;
-}
-
-.High { background:#e74c3c; }
-.Medium { background:#f39c12; }
-.Low { background:#2ecc71; }
-
-.chart-container {
-  background: var(--card);
-  padding:20px;
-  border-radius:12px;
-  height:350px;
-  margin-bottom:30px;
-}
-</style>
+        th {
+            background: #f9fafb;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="layout">
-
 <div class="sidebar">
-  <h2>Admin Panel</h2>
-  <div class="menu-item">Dashboard</div>
-  <div class="menu-item logout" onclick="logout()">Logout</div>
+    <h2>Support Admin</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">Tickets</a>
+    <a href="#">Operators</a>
+    <a href="#">Reports</a>
+    <a href="#">Settings</a>
 </div>
 
 <div class="main">
 
-<div class="topbar">
-  <h1>Admin Dashboard</h1>
-  <button class="toggle-btn" onclick="toggleDark()">🌙 Toggle Mode</button>
-</div>
+    <div class="topbar">
+        <h1>Dashboard</h1>
+        <button onclick="logout()">Logout</button>
+    </div>
 
-<div class="stats">
-  <div class="card">
-    <h3>Total Tickets</h3>
-    <p id="totalTickets">0</p>
-  </div>
-  <div class="card">
-    <h3>Open Tickets</h3>
-    <p id="openTickets">0</p>
-  </div>
-  <div class="card">
-    <h3>SLA At Risk</h3>
-    <p id="slaAtRisk">0</p>
-  </div>
-</div>
+    <!-- KPI CARDS -->
+    <div class="cards">
+        <div class="card">
+            <h3>Total Tickets</h3>
+            <h2 id="totalTickets">0</h2>
+        </div>
 
-<h2>All Tickets</h2>
-<table id="ticketsTable">
-<thead>
-<tr>
-<th>#</th><th>Title</th><th>Priority</th><th>Status</th><th>Assigned</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+        <div class="card">
+            <h3>Open Tickets</h3>
+            <h2 id="openTickets">0</h2>
+        </div>
 
-<h2>Status Analytics</h2>
-<div class="chart-container">
-  <canvas id="statusChart"></canvas>
-</div>
+        <div class="card">
+            <h3>Closed Tickets</h3>
+            <h2 id="closedTickets">0</h2>
+        </div>
 
-<h2>Priority Distribution</h2>
-<div class="chart-container">
-  <canvas id="priorityChart"></canvas>
-</div>
+        <div class="card">
+            <h3>High Priority</h3>
+            <h2 id="highPriority">0</h2>
+        </div>
+    </div>
 
-</div>
+    <!-- CHARTS -->
+    <div class="charts">
+        <div class="chart-box">
+            <h3>Ticket Status Overview</h3>
+            <canvas id="statusChart"></canvas>
+        </div>
+
+        <div class="chart-box">
+            <h3>Priority Distribution</h3>
+            <canvas id="priorityChart"></canvas>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-section">
+        <h3>Recent Tickets</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                </tr>
+            </thead>
+            <tbody id="ticketTable"></tbody>
+        </table>
+    </div>
+
 </div>
 
 <script>
-if (localStorage.getItem("role") !== "admin") {
-  window.location.href = "/login.html";
-}
-
-const socket = io();
-let statusChart, priorityChart;
-
-function logout() {
-  localStorage.clear();
-  window.location.href = "/login.html";
-}
-
-function toggleDark() {
-  document.body.classList.toggle("dark");
-}
-
-function loadData() {
-  fetch("/api/tickets")
-  .then(res => res.json())
-  .then(tickets => {
-
-    const tbody = document.querySelector("#ticketsTable tbody");
-    tbody.innerHTML = "";
-
-    let open = 0;
-    let sla = 0;
-
-    let statusCount = {
-      "Assigned": 0,
-      "In Progress": 0,
-      "Closed": 0
-    };
-
-    let priorityCount = {
-      "High": 0,
-      "Medium": 0,
-      "Low": 0
-    };
-
-    tickets.forEach((t, i) => {
-
-      if (t.status !== "Closed") open++;
-      if (t.priority === "High" && t.status !== "Closed") sla++;
-
-      if (statusCount[t.status] !== undefined) {
-        statusCount[t.status]++;
-      }
-
-      if (priorityCount[t.priority] !== undefined) {
-        priorityCount[t.priority]++;
-      }
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${t.title || "-"}</td>
-          <td><span class="badge ${t.priority}">${t.priority || "-"}</span></td>
-          <td>${t.status || "-"}</td>
-          <td>${t.assignedTo || "-"}</td>
-        </tr>
-      `;
-    });
+async function loadDashboard() {
+    const res = await fetch("/api/tickets");
+    const tickets = await res.json();
 
     document.getElementById("totalTickets").innerText = tickets.length;
-    document.getElementById("openTickets").innerText = open;
-    document.getElementById("slaAtRisk").innerText = sla;
+    document.getElementById("openTickets").innerText =
+        tickets.filter(t => t.status !== "Closed").length;
+    document.getElementById("closedTickets").innerText =
+        tickets.filter(t => t.status === "Closed").length;
+    document.getElementById("highPriority").innerText =
+        tickets.filter(t => t.priority === "High").length;
 
-    renderCharts(statusCount, priorityCount);
-  });
+    // Table
+    const table = document.getElementById("ticketTable");
+    table.innerHTML = "";
+
+    tickets.slice(-5).forEach(ticket => {
+        table.innerHTML += `
+            <tr>
+                <td>${ticket.id}</td>
+                <td>${ticket.title}</td>
+                <td>${ticket.priority}</td>
+                <td>${ticket.status}</td>
+                <td>${ticket.assignedTo}</td>
+            </tr>
+        `;
+    });
+
+    // Charts
+    new Chart(document.getElementById("statusChart"), {
+        type: "bar",
+        data: {
+            labels: ["Open", "Closed"],
+            datasets: [{
+                data: [
+                    tickets.filter(t => t.status !== "Closed").length,
+                    tickets.filter(t => t.status === "Closed").length
+                ]
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("priorityChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["High", "Medium", "Low"],
+            datasets: [{
+                data: [
+                    tickets.filter(t => t.priority === "High").length,
+                    tickets.filter(t => t.priority === "Medium").length,
+                    tickets.filter(t => t.priority === "Low").length
+                ]
+            }]
+        }
+    });
 }
 
-function renderCharts(statusCount, priorityCount){
-
-  if(statusChart) statusChart.destroy();
-  if(priorityChart) priorityChart.destroy();
-
-  statusChart = new Chart(document.getElementById("statusChart"),{
-    type:"bar",
-    data:{
-      labels:Object.keys(statusCount),
-      datasets:[{
-        label:"Ticket Status",
-        data:Object.values(statusCount),
-        backgroundColor:["#3498db","#f39c12","#2ecc71"]
-      }]
-    }
-  });
-
-  priorityChart = new Chart(document.getElementById("priorityChart"),{
-    type:"pie",
-    data:{
-      labels:Object.keys(priorityCount),
-      datasets:[{
-        data:Object.values(priorityCount),
-        backgroundColor:["#e74c3c","#f39c12","#2ecc71"]
-      }]
-    }
-  });
+function logout() {
+    window.location.href = "role.html";
 }
 
-loadData();
-socket.on("newTicket", loadData);
-socket.on("ticketStatusUpdated", loadData);
+loadDashboard();
 </script>
 
 </body>
