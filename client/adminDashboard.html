@@ -60,11 +60,17 @@
             color: white !important;
         }
 
+        hr {
+            border: 0;
+            border-top: 1px solid #374151;
+            margin: 20px 0;
+        }
+
         /* Main */
         .main {
             flex: 1;
             margin-left: 230px;
-            padding: 20px 30px;
+            padding: 30px 40px;
             transition: margin-left 0.3s ease;
             width: 100%;
         }
@@ -76,6 +82,7 @@
         .topbar {
             display: flex;
             align-items: center;
+            gap: 20px; /* Proper spacing */
             margin-bottom: 30px;
         }
 
@@ -83,16 +90,16 @@
             background: #1f2937;
             color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 6px;
             cursor: pointer;
-            margin-right: 20px;
         }
 
         .menu-btn:hover {
             background: #111827;
         }
 
+        /* Cards */
         .cards {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -112,6 +119,7 @@
             transform: translateY(-5px);
         }
 
+        /* Charts */
         .charts {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -125,6 +133,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
+        /* Table */
         .table-section {
             margin-top: 30px;
             background: white;
@@ -146,12 +155,6 @@
         th {
             background: #f9fafb;
         }
-
-        hr {
-            border: 0;
-            border-top: 1px solid #374151;
-            margin: 20px 0;
-        }
     </style>
 </head>
 
@@ -167,7 +170,6 @@
     <a href="settings.html">Settings</a>
 
     <hr>
-
     <a href="#" onclick="logout()" class="logout-btn">Logout</a>
 </div>
 
@@ -301,9 +303,7 @@ function toggleSidebar() {
 }
 
 function logout() {
-    if (confirm("Are you sure you want to logout?")) {
-        window.location.href = "role.html";
-    }
+    window.location.href = "role.html";
 }
 
 loadDashboard();
