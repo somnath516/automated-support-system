@@ -14,7 +14,6 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 230px;
             background: #1f2937;
@@ -27,7 +26,6 @@
             transition: transform 0.3s ease;
         }
 
-        /* Hidden by default */
         .sidebar.collapsed {
             transform: translateX(-100%);
         }
@@ -67,16 +65,14 @@
             margin: 20px 0;
         }
 
-        /* Main */
         .main {
             flex: 1;
-            margin-left: 0; /* Full width initially */
+            margin-left: 0;
             padding: 30px 40px;
             transition: margin-left 0.3s ease;
             width: 100%;
         }
 
-        /* When sidebar opens */
         .main.full {
             margin-left: 230px;
         }
@@ -101,7 +97,6 @@
             background: #111827;
         }
 
-        /* Cards */
         .cards {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -121,7 +116,6 @@
             transform: translateY(-5px);
         }
 
-        /* Charts */
         .charts {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -135,7 +129,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
-        /* Table */
         .table-section {
             margin-top: 30px;
             background: white;
@@ -162,16 +155,13 @@
 
 <body>
 
-<!-- Sidebar hidden by default -->
 <div class="sidebar collapsed" id="sidebar">
     <h2>Support Admin</h2>
-
     <a href="adminDashboard.html">Dashboard</a>
     <a href="tickets.html">Tickets</a>
     <a href="operators.html">Operators</a>
     <a href="reports.html">Reports</a>
     <a href="settings.html">Settings</a>
-
     <hr>
     <a href="#" onclick="logout()" class="logout-btn">Logout</a>
 </div>
@@ -183,7 +173,6 @@
         <h1>Admin Dashboard</h1>
     </div>
 
-    <!-- KPI CARDS -->
     <div class="cards">
         <div class="card">
             <h3>Total Tickets</h3>
@@ -203,7 +192,6 @@
         </div>
     </div>
 
-    <!-- CHARTS -->
     <div class="charts">
         <div class="chart-box">
             <h3>Ticket Status Overview</h3>
@@ -216,7 +204,6 @@
         </div>
     </div>
 
-    <!-- TABLE -->
     <div class="table-section">
         <h3>Recent Tickets</h3>
         <table>
@@ -236,16 +223,31 @@
 </div>
 
 <script>
+let statusChartInstance;
+let priorityChartInstance;
+
 async function loadDashboard() {
     const res = await fetch("/api/tickets");
     const tickets = await res.json();
 
-    const openCount = tickets.filter(t => t.status === "Open").length;
-    const closedCount = tickets.filter(t => t.status === "Closed").length;
-    const assignedCount = tickets.filter(t => t.assignedTo && t.assignedTo !== "").length;
+    const openCount = tickets.filter(t =>
+        t.status && t.status.toLowerCase() === "open"
+    ).length;
+
+    const inProgressCount = tickets.filter(t =>
+        t.status && t.status.toLowerCase() === "in progress"
+    ).length;
+
+    const closedCount = tickets.filter(t =>
+        t.status && t.status.toLowerCase() === "closed"
+    ).length;
+
+    const assignedCount = tickets.filter(t =>
+        t.assignedTo && t.assignedTo.trim() !== ""
+    ).length;
 
     document.getElementById("totalTickets").innerText = tickets.length;
-    document.getElementById("openTickets").innerText = openCount;
+    document.getElementById("openTickets").innerText = openCount + inProgressCount;
     document.getElementById("closedTickets").innerText = closedCount;
     document.getElementById("assignedTickets").innerText = assignedCount;
 
@@ -264,35 +266,43 @@ async function loadDashboard() {
         `;
     });
 
-    new Chart(document.getElementById("statusChart"), {
-        type: "bar",
-        data: {
-            labels: ["Assigned", "Open", "Closed"],
-            datasets: [{
-                label: "Ticket Count",
-                data: [assignedCount, openCount, closedCount],
-                backgroundColor: ["#3b82f6", "#f59e0b", "#10b981"]
-            }]
-        },
-        options: {
-            plugins: { legend: { display: false } }
-        }
-    });
+    if (statusChartInstance) statusChartInstance.destroy();
+    if (priorityChartInstance) priorityChartInstance.destroy();
 
-    new Chart(document.getElementById("priorityChart"), {
-        type: "doughnut",
-        data: {
-            labels: ["High", "Medium", "Low"],
-            datasets: [{
-                data: [
-                    tickets.filter(t => t.priority === "High").length,
-                    tickets.filter(t => t.priority === "Medium").length,
-                    tickets.filter(t => t.priority === "Low").length
-                ],
-                backgroundColor: ["#ef4444", "#f59e0b", "#10b981"]
-            }]
+    statusChartInstance = new Chart(
+        document.getElementById("statusChart"),
+        {
+            type: "bar",
+            data: {
+                labels: ["Assigned", "In Progress", "Closed"],
+                datasets: [{
+                    data: [assignedCount, inProgressCount, closedCount],
+                    backgroundColor: ["#3b82f6", "#f59e0b", "#10b981"]
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } }
+            }
         }
-    });
+    );
+
+    priorityChartInstance = new Chart(
+        document.getElementById("priorityChart"),
+        {
+            type: "doughnut",
+            data: {
+                labels: ["High", "Medium", "Low"],
+                datasets: [{
+                    data: [
+                        tickets.filter(t => t.priority === "High").length,
+                        tickets.filter(t => t.priority === "Medium").length,
+                        tickets.filter(t => t.priority === "Low").length
+                    ],
+                    backgroundColor: ["#ef4444", "#f59e0b", "#10b981"]
+                }]
+            }
+        }
+    );
 }
 
 function toggleSidebar() {
