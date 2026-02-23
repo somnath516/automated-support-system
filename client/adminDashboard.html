@@ -3,7 +3,6 @@
 <head>
     <title>Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -12,6 +11,7 @@
             font-family: 'Segoe UI', sans-serif;
             display: flex;
             background: #f4f6f9;
+            overflow-x: hidden;
         }
 
         /* Sidebar */
@@ -21,6 +21,11 @@
             color: white;
             height: 100vh;
             padding: 20px;
+            transition: 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            margin-left: -230px;
         }
 
         .sidebar h2 {
@@ -43,10 +48,11 @@
             color: white;
         }
 
-        /* Main Content */
+        /* Main */
         .main {
             flex: 1;
             padding: 20px 30px;
+            transition: 0.3s ease;
         }
 
         .topbar {
@@ -54,6 +60,56 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+        }
+
+        .menu-btn {
+            background: #1f2937;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .logout-container {
+            position: relative;
+        }
+
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .logout-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 40px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            padding: 10px;
+            width: 180px;
+        }
+
+        .logout-dropdown p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: gray;
+        }
+
+        .logout-dropdown button {
+            width: 100%;
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 6px;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .cards {
@@ -68,16 +124,11 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: 0.3s;
         }
 
-        .card h3 {
-            margin: 0;
-            font-size: 14px;
-            color: gray;
-        }
-
-        .card h2 {
-            margin-top: 10px;
+        .card:hover {
+            transform: translateY(-5px);
         }
 
         .charts {
@@ -109,7 +160,6 @@
         th, td {
             padding: 10px;
             border-bottom: 1px solid #eee;
-            text-align: left;
         }
 
         th {
@@ -120,7 +170,7 @@
 
 <body>
 
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
     <h2>Support Admin</h2>
     <a href="#">Dashboard</a>
     <a href="#">Tickets</a>
@@ -132,8 +182,17 @@
 <div class="main">
 
     <div class="topbar">
+        <button class="menu-btn" onclick="toggleSidebar()">☰ Menu</button>
         <h1>Dashboard</h1>
-        <button onclick="logout()">Logout</button>
+
+        <div class="logout-container">
+            <button class="logout-btn" onclick="toggleLogout()">Logout</button>
+            <div class="logout-dropdown" id="logoutDropdown">
+                <p>Admin Panel</p>
+                <p>Secure Session Active</p>
+                <button onclick="logout()">Confirm Logout</button>
+            </div>
+        </div>
     </div>
 
     <!-- KPI CARDS -->
@@ -142,20 +201,17 @@
             <h3>Total Tickets</h3>
             <h2 id="totalTickets">0</h2>
         </div>
-
         <div class="card">
             <h3>Open Tickets</h3>
             <h2 id="openTickets">0</h2>
         </div>
-
         <div class="card">
             <h3>Closed Tickets</h3>
             <h2 id="closedTickets">0</h2>
         </div>
-
         <div class="card">
-            <h3>High Priority</h3>
-            <h2 id="highPriority">0</h2>
+            <h3>Assigned Tickets</h3>
+            <h2 id="assignedTickets">0</h2>
         </div>
     </div>
 
@@ -196,15 +252,15 @@ async function loadDashboard() {
     const res = await fetch("/api/tickets");
     const tickets = await res.json();
 
-    document.getElementById("totalTickets").innerText = tickets.length;
-    document.getElementById("openTickets").innerText =
-        tickets.filter(t => t.status !== "Closed").length;
-    document.getElementById("closedTickets").innerText =
-        tickets.filter(t => t.status === "Closed").length;
-    document.getElementById("highPriority").innerText =
-        tickets.filter(t => t.priority === "High").length;
+    const openCount = tickets.filter(t => t.status !== "Closed").length;
+    const closedCount = tickets.filter(t => t.status === "Closed").length;
+    const assignedCount = tickets.filter(t => t.assignedTo && t.assignedTo !== "").length;
 
-    // Table
+    document.getElementById("totalTickets").innerText = tickets.length;
+    document.getElementById("openTickets").innerText = openCount;
+    document.getElementById("closedTickets").innerText = closedCount;
+    document.getElementById("assignedTickets").innerText = assignedCount;
+
     const table = document.getElementById("ticketTable");
     table.innerHTML = "";
 
@@ -215,20 +271,22 @@ async function loadDashboard() {
                 <td>${ticket.title}</td>
                 <td>${ticket.priority}</td>
                 <td>${ticket.status}</td>
-                <td>${ticket.assignedTo}</td>
+                <td>${ticket.assignedTo || "Unassigned"}</td>
             </tr>
         `;
     });
 
-    // Charts
     new Chart(document.getElementById("statusChart"), {
         type: "bar",
         data: {
-            labels: ["Open", "Closed"],
+            labels: ["Open", "Closed", "Assigned"],
             datasets: [{
-                data: [
-                    tickets.filter(t => t.status !== "Closed").length,
-                    tickets.filter(t => t.status === "Closed").length
+                label: "Tickets",
+                data: [openCount, closedCount, assignedCount],
+                backgroundColor: [
+                    "#f59e0b",   // Open - Orange
+                    "#10b981",   // Closed - Green
+                    "#3b82f6"    // Assigned - Blue
                 ]
             }]
         }
@@ -243,10 +301,24 @@ async function loadDashboard() {
                     tickets.filter(t => t.priority === "High").length,
                     tickets.filter(t => t.priority === "Medium").length,
                     tickets.filter(t => t.priority === "Low").length
+                ],
+                backgroundColor: [
+                    "#ef4444",
+                    "#f59e0b",
+                    "#10b981"
                 ]
             }]
         }
     });
+}
+
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("collapsed");
+}
+
+function toggleLogout() {
+    const dropdown = document.getElementById("logoutDropdown");
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
 }
 
 function logout() {
