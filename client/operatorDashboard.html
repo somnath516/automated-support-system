@@ -40,7 +40,6 @@ body{
 .sidebar a:hover{background:#374151;color:white;}
 .logout-btn{color:#f87171!important;margin-top:20px;}
 
-/* Main */
 .main{
   flex:1;
   margin-left:0;
@@ -80,23 +79,17 @@ body{
   border-radius:14px;
   text-align:center;
   box-shadow:0 8px 20px rgba(0,0,0,0.06);
-  transition:0.2s;
 }
-.kpi:hover{ transform:translateY(-4px); }
-
 .kpi h4{
   font-size:14px;
   color:#6b7280;
-  margin-bottom:10px;
-  font-weight:500;
 }
 .kpi h2{
   font-size:30px;
   margin:0;
-  font-weight:600;
 }
 
-/* MIDDLE GRID */
+/* MAIN GRID (UPDATED STRUCTURE) */
 .middle-grid{
   display:grid;
   grid-template-columns:2fr 1fr;
@@ -104,15 +97,27 @@ body{
   margin-bottom:30px;
 }
 
-.chart-box,
-.recent-box{
+/* LEFT SIDE */
+.left-section .block,
+.left-section .chart-box{
   background:white;
   padding:20px;
   border-radius:14px;
   box-shadow:0 8px 20px rgba(0,0,0,0.06);
+  margin-bottom:20px;
 }
 
-/* Recent Tickets Styled Like Image */
+/* RIGHT SIDE */
+.right-section .chart-box,
+.right-section .recent-box{
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.06);
+  margin-bottom:20px;
+}
+
+/* Recent Tickets */
 .recent-ticket-row{
   display:flex;
   justify-content:space-between;
@@ -122,7 +127,6 @@ body{
   background:#f9fafb;
   border-radius:8px;
   font-size:14px;
-  border-left:4px solid #6366f1;
 }
 
 .status-badge{
@@ -132,18 +136,9 @@ body{
   color:white;
   font-weight:500;
 }
-
 .status-open{background:#3b82f6;}
 .status-progress{background:#f59e0b;}
 .status-closed{background:#10b981;}
-
-/* Table Block */
-.block{
-  background:white;
-  padding:20px;
-  border-radius:14px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.06);
-}
 
 table{
   width:100%;
@@ -154,7 +149,7 @@ th,td{
   border-bottom:1px solid #eee;
   text-align:left;
 }
-th{ background:#f3f4f6; font-weight:600; }
+th{ background:#f3f4f6; }
 
 .badge{
   padding:4px 10px;
@@ -222,39 +217,47 @@ if(localStorage.getItem("role")!=="operator"){
 
 <div class="middle-grid">
 
-  <div>
+  <!-- LEFT SIDE -->
+  <div class="left-section">
+
+    <div class="block">
+      <h3>My Tickets</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="ticketTable"></tbody>
+      </table>
+    </div>
+
     <div class="chart-box">
       <h3>Average Tickets Created</h3>
       <canvas id="avgChart" height="120"></canvas>
     </div>
 
-    <div class="chart-box" style="margin-top:20px;">
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="right-section">
+
+    <div class="chart-box">
       <h3>Ticket Priority</h3>
-      <canvas id="priorityChart" height="120"></canvas>
+      <canvas id="priorityChart" height="180"></canvas>
     </div>
+
+    <div class="recent-box">
+      <h3>Recent Tickets</h3>
+      <div id="recentTickets"></div>
+    </div>
+
   </div>
 
-  <div class="recent-box">
-    <h3>Recent Tickets</h3>
-    <div id="recentTickets"></div>
-  </div>
-
-</div>
-
-<div class="block">
-<h3>My Tickets</h3>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Title</th>
-<th>Priority</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody id="ticketTable"></tbody>
-</table>
 </div>
 
 </div>
@@ -285,36 +288,33 @@ const closed=tickets.filter(t=>t.status==="Closed").length;
 document.getElementById("totalAssigned").innerText=total;
 document.getElementById("inProgress").innerText=inProgress;
 document.getElementById("closedCount").innerText=closed;
-
-const completion=total?Math.round((closed/total)*100):0;
-document.getElementById("completionRate").innerText=completion+"%";
+document.getElementById("completionRate").innerText=
+total?Math.round((closed/total)*100)+"%":"0%";
 
 /* Recent Tickets */
 const recentDiv=document.getElementById("recentTickets");
 recentDiv.innerHTML="";
 tickets.slice(-5).reverse().forEach(ticket=>{
-let statusClass="";
+let statusClass="status-open";
 if(ticket.status==="Closed") statusClass="status-closed";
 else if(ticket.status==="In Progress") statusClass="status-progress";
-else statusClass="status-open";
 
 recentDiv.innerHTML+=`
 <div class="recent-ticket-row">
-  <div>
-    <strong>${ticket.title}</strong><br>
-    <small>${ticket.status}</small>
-  </div>
-  <span class="status-badge ${statusClass}">
-    ${ticket.status}
-  </span>
+<div>
+<strong>${ticket.title}</strong><br>
+<small>${ticket.status}</small>
+</div>
+<span class="status-badge ${statusClass}">
+${ticket.status}
+</span>
 </div>`;
 });
 
-/* Priority Chart */
+/* HALF DONUT Priority Chart */
 const high=tickets.filter(t=>t.priority==="High").length;
 const medium=tickets.filter(t=>t.priority==="Medium").length;
 const low=tickets.filter(t=>t.priority==="Low").length;
-const totalActive=high+medium+low;
 
 if(window.priorityChartObj) window.priorityChartObj.destroy();
 window.priorityChartObj=new Chart(
@@ -325,30 +325,16 @@ data:{
 labels:["High","Medium","Low"],
 datasets:[{
 data:[high,medium,low],
-backgroundColor:["#6366f1","#22c55e","#f59e0b"],
+backgroundColor:["#ef4444","#f59e0b","#10b981"],
 borderWidth:0
 }]
 },
 options:{
-cutout:"70%",
+rotation:-90,
+circumference:180,
+cutout:"65%",
 plugins:{legend:{position:"bottom"}}
-},
-plugins:[{
-id:'centerText',
-beforeDraw(chart){
-const {width,height}=chart;
-const ctx=chart.ctx;
-ctx.restore();
-ctx.font="600 18px Poppins";
-ctx.textAlign="center";
-ctx.fillStyle="#111";
-ctx.fillText(totalActive,width/2,height/2);
-ctx.font="12px Poppins";
-ctx.fillStyle="#6b7280";
-ctx.fillText("Total Active",width/2,height/2+20);
-ctx.save();
 }
-}]
 });
 
 /* Average Chart */
@@ -358,27 +344,19 @@ document.getElementById("avgChart"),
 {
 type:'bar',
 data:{
-labels:["Nov 21","Nov 22","Nov 23","Nov 24","Nov 25","Nov 26"],
+labels:["Week1","Week2","Week3","Week4"],
 datasets:[{
 data:[
-Math.floor(total/5)+2,
-Math.floor(total/5)-1,
-Math.floor(total/5)+3,
-Math.floor(total/5),
-Math.floor(total/5)+1,
-Math.floor(total/5)+2
+Math.floor(total/4),
+Math.floor(total/4)+1,
+Math.floor(total/4)+2,
+Math.floor(total/4)-1
 ],
 backgroundColor:"#22c55e",
 borderRadius:8
 }]
 },
-options:{
-plugins:{legend:{display:false}},
-scales:{
-y:{grid:{color:"#f3f4f6"}},
-x:{grid:{display:false}}
-}
-}
+options:{plugins:{legend:{display:false}}}
 });
 
 /* Table */
