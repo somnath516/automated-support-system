@@ -1,8 +1,12 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const dns = require("dns");
 
-// Import Ticket Model (ticket.js must be in same folder)
+// 🔥 Fix for querySrv ECONNREFUSED
+dns.setDefaultResultOrder("ipv4first");
+
+// Import Ticket Model
 const Ticket = require("./ticket");
 
 const app = express();
@@ -11,9 +15,10 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// 🔹 Replace YOUR_PASSWORD with your real MongoDB password
-const MONGO_URI = "mongodb+srv://admin:YOUR_PASSWORD@cluster0.aqbrol6.mongodb.net/ticketDB?retryWrites=true&w=majority";
+// ✅ Using your real password
+const MONGO_URI = "mongodb+srv://admin:admin123@cluster0.aqbrol6.mongodb.net/ticketDB?retryWrites=true&w=majority";
 
+// Connect to MongoDB
 mongoose.connect(MONGO_URI)
   .then(() => console.log("MongoDB Connected Successfully"))
   .catch(err => console.log("MongoDB Connection Error:", err));
