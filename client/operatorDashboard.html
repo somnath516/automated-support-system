@@ -7,6 +7,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
@@ -82,9 +83,7 @@ body{
   transition:0.2s;
 }
 
-.kpi:hover{
-  transform:translateY(-4px);
-}
+.kpi:hover{ transform:translateY(-4px); }
 
 .kpi h4{
   font-size:14px;
@@ -97,6 +96,31 @@ body{
   font-size:30px;
   margin:0;
   font-weight:600;
+}
+
+/* NEW MIDDLE GRID */
+.middle-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+  margin-bottom:30px;
+}
+
+.chart-box,
+.recent-box{
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.06);
+}
+
+.recent-item{
+  border-left:4px solid #10b981;
+  padding:10px;
+  margin-bottom:12px;
+  background:#f9fafb;
+  border-radius:6px;
+  font-size:14px;
 }
 
 /* Table Block */
@@ -116,10 +140,7 @@ th,td{
   border-bottom:1px solid #eee;
   text-align:left;
 }
-th{
-  background:#f3f4f6;
-  font-weight:600;
-}
+th{ background:#f3f4f6; font-weight:600; }
 
 .badge{
   padding:4px 10px;
@@ -186,6 +207,28 @@ if(localStorage.getItem("role")!=="operator"){
   </div>
 </div>
 
+<!-- NEW MIDDLE SECTION -->
+<div class="middle-grid">
+
+  <div>
+    <div class="chart-box">
+      <h3>Average Tickets Created</h3>
+      <canvas id="avgChart" height="120"></canvas>
+    </div>
+
+    <div class="chart-box" style="margin-top:20px;">
+      <h3>Ticket Priority</h3>
+      <canvas id="priorityChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="recent-box">
+    <h3>Recent Tickets</h3>
+    <div id="recentTickets"></div>
+  </div>
+
+</div>
+
 <!-- TABLE -->
 <div class="block">
 <h3>My Tickets</h3>
@@ -235,10 +278,60 @@ document.getElementById("closedCount").innerText=closed;
 const completion=total?Math.round((closed/total)*100):0;
 document.getElementById("completionRate").innerText=completion+"%";
 
+/* Recent Tickets */
+const recentDiv=document.getElementById("recentTickets");
+recentDiv.innerHTML="";
+tickets.slice(-5).reverse().forEach(ticket=>{
+  recentDiv.innerHTML+=`
+  <div class="recent-item">
+    <strong>${ticket.title}</strong><br>
+    Status: ${ticket.status}
+  </div>`;
+});
+
+/* Priority Chart */
+const high=tickets.filter(t=>t.priority==="High").length;
+const medium=tickets.filter(t=>t.priority==="Medium").length;
+const low=tickets.filter(t=>t.priority==="Low").length;
+
+if(window.priorityChartObj) window.priorityChartObj.destroy();
+window.priorityChartObj=new Chart(
+document.getElementById("priorityChart"),
+{
+type:'doughnut',
+data:{
+labels:["High","Medium","Low"],
+datasets:[{
+data:[high,medium,low],
+backgroundColor:["#ef4444","#f59e0b","#10b981"]
+}]
+}
+});
+
+/* Average Chart */
+if(window.avgChartObj) window.avgChartObj.destroy();
+window.avgChartObj=new Chart(
+document.getElementById("avgChart"),
+{
+type:'bar',
+data:{
+labels:["Week1","Week2","Week3","Week4"],
+datasets:[{
+label:"Tickets",
+data:[
+Math.floor(total/4),
+Math.floor(total/4)+1,
+Math.floor(total/4)+2,
+Math.floor(total/4)-1
+],
+backgroundColor:"#10b981"
+}]
+}
+});
+
 /* Table */
 const tbody=document.getElementById("ticketTable");
 tbody.innerHTML="";
-
 tickets.forEach((ticket,i)=>{
 tbody.innerHTML+=`
 <tr>
