@@ -14,26 +14,22 @@ const TicketSchema = new mongoose.Schema({
     required: true
   },
   category: {
-    type: String, // Example: Network, Hardware, Software
+    type: String,
     required: true
   },
   status: {
     type: String,
-    enum: ["Open", "In Progress", "Resolved"],
+    enum: ["Open", "In Progress", "Closed"],
     default: "Open"
   },
-  assignedOperatorId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Operator"
+  assignedTo: {
+    type: String,   // storing operator username
+    required: true
   },
   createdAt: {
     type: Date,
     default: Date.now
-  },
-  slaDeadline: {
-    type: Date
   }
 });
 
 module.exports = mongoose.model("Ticket", TicketSchema);
-
