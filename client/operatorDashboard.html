@@ -82,7 +82,6 @@ body{
   box-shadow:0 8px 20px rgba(0,0,0,0.06);
   transition:0.2s;
 }
-
 .kpi:hover{ transform:translateY(-4px); }
 
 .kpi h4{
@@ -91,14 +90,13 @@ body{
   margin-bottom:10px;
   font-weight:500;
 }
-
 .kpi h2{
   font-size:30px;
   margin:0;
   font-weight:600;
 }
 
-/* NEW MIDDLE GRID */
+/* MIDDLE GRID */
 .middle-grid{
   display:grid;
   grid-template-columns:2fr 1fr;
@@ -114,14 +112,30 @@ body{
   box-shadow:0 8px 20px rgba(0,0,0,0.06);
 }
 
-.recent-item{
-  border-left:4px solid #10b981;
-  padding:10px;
+/* Recent Tickets Styled Like Image */
+.recent-ticket-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px;
   margin-bottom:12px;
   background:#f9fafb;
-  border-radius:6px;
+  border-radius:8px;
   font-size:14px;
+  border-left:4px solid #6366f1;
 }
+
+.status-badge{
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:12px;
+  color:white;
+  font-weight:500;
+}
+
+.status-open{background:#3b82f6;}
+.status-progress{background:#f59e0b;}
+.status-closed{background:#10b981;}
 
 /* Table Block */
 .block{
@@ -187,7 +201,6 @@ if(localStorage.getItem("role")!=="operator"){
   <h1>Operator Dashboard</h1>
 </div>
 
-<!-- KPI ROW -->
 <div class="kpi-cards">
   <div class="kpi">
     <h4>Tickets Assigned</h4>
@@ -207,7 +220,6 @@ if(localStorage.getItem("role")!=="operator"){
   </div>
 </div>
 
-<!-- NEW MIDDLE SECTION -->
 <div class="middle-grid">
 
   <div>
@@ -229,7 +241,6 @@ if(localStorage.getItem("role")!=="operator"){
 
 </div>
 
-<!-- TABLE -->
 <div class="block">
 <h3>My Tickets</h3>
 <table>
@@ -259,7 +270,7 @@ function toggleSidebar(){
 
 function logout(){
   localStorage.clear();
-  window.location.href="/login.html";
+  window.location.href="/role.html";
 }
 
 function loadTickets(){
@@ -282,17 +293,28 @@ document.getElementById("completionRate").innerText=completion+"%";
 const recentDiv=document.getElementById("recentTickets");
 recentDiv.innerHTML="";
 tickets.slice(-5).reverse().forEach(ticket=>{
-  recentDiv.innerHTML+=`
-  <div class="recent-item">
+let statusClass="";
+if(ticket.status==="Closed") statusClass="status-closed";
+else if(ticket.status==="In Progress") statusClass="status-progress";
+else statusClass="status-open";
+
+recentDiv.innerHTML+=`
+<div class="recent-ticket-row">
+  <div>
     <strong>${ticket.title}</strong><br>
-    Status: ${ticket.status}
-  </div>`;
+    <small>${ticket.status}</small>
+  </div>
+  <span class="status-badge ${statusClass}">
+    ${ticket.status}
+  </span>
+</div>`;
 });
 
 /* Priority Chart */
 const high=tickets.filter(t=>t.priority==="High").length;
 const medium=tickets.filter(t=>t.priority==="Medium").length;
 const low=tickets.filter(t=>t.priority==="Low").length;
+const totalActive=high+medium+low;
 
 if(window.priorityChartObj) window.priorityChartObj.destroy();
 window.priorityChartObj=new Chart(
@@ -303,9 +325,30 @@ data:{
 labels:["High","Medium","Low"],
 datasets:[{
 data:[high,medium,low],
-backgroundColor:["#ef4444","#f59e0b","#10b981"]
+backgroundColor:["#6366f1","#22c55e","#f59e0b"],
+borderWidth:0
 }]
+},
+options:{
+cutout:"70%",
+plugins:{legend:{position:"bottom"}}
+},
+plugins:[{
+id:'centerText',
+beforeDraw(chart){
+const {width,height}=chart;
+const ctx=chart.ctx;
+ctx.restore();
+ctx.font="600 18px Poppins";
+ctx.textAlign="center";
+ctx.fillStyle="#111";
+ctx.fillText(totalActive,width/2,height/2);
+ctx.font="12px Poppins";
+ctx.fillStyle="#6b7280";
+ctx.fillText("Total Active",width/2,height/2+20);
+ctx.save();
 }
+}]
 });
 
 /* Average Chart */
@@ -315,17 +358,26 @@ document.getElementById("avgChart"),
 {
 type:'bar',
 data:{
-labels:["Week1","Week2","Week3","Week4"],
+labels:["Nov 21","Nov 22","Nov 23","Nov 24","Nov 25","Nov 26"],
 datasets:[{
-label:"Tickets",
 data:[
-Math.floor(total/4),
-Math.floor(total/4)+1,
-Math.floor(total/4)+2,
-Math.floor(total/4)-1
+Math.floor(total/5)+2,
+Math.floor(total/5)-1,
+Math.floor(total/5)+3,
+Math.floor(total/5),
+Math.floor(total/5)+1,
+Math.floor(total/5)+2
 ],
-backgroundColor:"#10b981"
+backgroundColor:"#22c55e",
+borderRadius:8
 }]
+},
+options:{
+plugins:{legend:{display:false}},
+scales:{
+y:{grid:{color:"#f3f4f6"}},
+x:{grid:{display:false}}
+}
 }
 });
 
