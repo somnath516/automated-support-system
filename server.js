@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // ✅ Using your real password
-const MONGO_URI = "mongodb+srv://admin:admin123@cluster0.aqbrol6.mongodb.net/ticketDB?retryWrites=true&w=majority";
+const MONGO_URI = "mongodb://admin:admin123@ac-vczfbjv-shard-00-00.aqbrol6.mongodb.net:27017,ac-vczfbjv-shard-00-01.aqbrol6.mongodb.net:27017,ac-vczfbjv-shard-00-02.aqbrol6.mongodb.net:27017/ticketDB?ssl=true&replicaSet=atlas-69a1483f99e4ced9b47b62b9-shard-0&authSource=admin&retryWrites=true&w=majority";
 
 // Connect to MongoDB
 mongoose.connect(MONGO_URI)
